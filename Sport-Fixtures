@@ -1,0 +1,27 @@
+from selenium import webdriver
+from selenium.webdriver.support.ui import Select
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+import pandas as pd
+from google.oauth2.service_account import Credentials
+import gspread
+    
+scope = ['https://www.googleapis.com/auth/spreadsheets']
+    
+creds = Credentials.from_service_account_file("XXX.json", scopes=scope)
+gs = gspread.authorize(creds)
+    
+sheet = gs.open_by_url('https://docs.google.com/spreadsheets/d/XXX_E/edit#gid=0')
+worksheet = sheet.get_worksheet(0)
+    
+PATH ="C:/Users/XXX/Desktop/chromedriver.exe"
+driver = webdriver.Chrome( PATH )
+    
+driver.get("https://fixturedownload.com/XXX/XXX")
+Select(WebDriverWait(driver, 20).until(EC.visibility_of_element_located((By.XPATH, "//select[@name='timezone']")))).select_by_value("XXX" )
+driver.find_element(By.XPATH, "//input[@value='Set Timezone']").click()
+data = WebDriverWait(driver, 20).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[2]/div/table"))).get_attribute("outerHTML")
+df = pd.read_html(data)
+
+worksheet.update([df[0].columns.values.tolist()] + df[0].values.tolist())
